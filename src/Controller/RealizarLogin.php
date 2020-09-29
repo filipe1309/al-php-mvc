@@ -31,6 +31,8 @@ class RealizarLogin extends ControllerComHtml implements InterfaceControladorReq
             return;
         }
 
+        $_SESSION['logado'] = true;
+
         header('Location: /listar-cursos');
     }
 }
