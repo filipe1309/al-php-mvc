@@ -20,14 +20,18 @@ class RealizarLogin extends ControllerComHtml implements InterfaceControladorReq
         $email = filter_input(INPUT_POST, 'email', FILTER_VALIDATE_EMAIL);
         
         if (is_null($email) || $email === false) {
-            Echo 'E-mail inválido';
+            $_SESSION['tipo_mensagem'] = 'danger';
+            $_SESSION['mensagem'] =  'E-mail inválido';
+            header('Location: /login');
             return;
         }
 
         $senha = filter_input(INPUT_POST, 'senha', FILTER_SANITIZE_STRING);
         $usuario = $this->repositorioDeUsuarios->findOneBy(['email' => $email]);
         if (is_null($usuario) || !$usuario->senhaEstaCorreta($senha)) {
-            Echo 'E-mail/Senha inválidos';
+            $_SESSION['tipo_mensagem'] = 'danger';
+            $_SESSION['mensagem'] = 'E-mail/Senha inválidos';
+            header('Location: /login');
             return;
         }
 
