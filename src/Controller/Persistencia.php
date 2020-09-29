@@ -2,32 +2,38 @@
 
 namespace Alura\Cursos\Controller;
 
+use Nyholm\Psr7\Response;
 use Alura\Cursos\Entity\Curso;
-use Alura\Cursos\Infra\EntityManagerCreator;
+use Psr\Http\Message\ResponseInterface;
+use Doctrine\ORM\EntityManagerInterface;
 use Alura\Cursos\Helper\FlashMessageTrait;
+use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Server\RequestHandlerInterface;
+use Alura\Cursos\Helper\RenderizadorDeHtmlTrait;
 
-class Persistencia implements InterfaceControladorRequisicao
+class Persistencia implements RequestHandlerInterface
 {
     use FlashMessageTrait;
 
     private $entityManager;
 
-    public function __construct()
+    public function __construct(EntityManagerInterface $entityManager)
     {
-        $this->entityManager = (new EntityManagerCreator())->getEntityManager();
+        $this->entityManager = $entityManager;
     }
 
-    public function processaRequisicao(): void
+    public function handle(ServerRequestInterface $request): ResponseInterface
     {
         // pegar dados do form
-        $descricao = filter_input(INPUT_POST, 'descricao', FILTER_SANITIZE_STRING);
-
+        $post = $request->getParsedBody();
+        $descricao = filter_var($post['descricao'], FILTER_SANITIZE_STRING);
+        
         // montar modelo curso
         $curso = new Curso();
         $curso->setDescricao($descricao);
-
-
-        $id = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT);
+        
+        $queryString = $request->getQueryParams();
+        $id = filter_var($queryString['id'], FILTER_VALIDATE_INT);
 
         $tipo = 'success';
         if (!is_null($id) && $id !== false) {
@@ -43,6 +49,6 @@ class Persistencia implements InterfaceControladorRequisicao
         }
         $this->entityManager->flush();
 
-        header('Location: /listar-cursos', true, 302);
+        return new Response(302, ['Location' => '/listar-cursos']);
     }
 }
