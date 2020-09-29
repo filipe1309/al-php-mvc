@@ -4,9 +4,13 @@ namespace Alura\Cursos\Controller;
 
 use Alura\Cursos\Entity\Usuario;
 use Alura\Cursos\Infra\EntityManagerCreator;
+use Alura\Cursos\Helper\FlashMessageTrait;
+use Alura\Cursos\Helper\RenderizadorDeHtmlTrait;
 
-class RealizarLogin extends ControllerComHtml implements InterfaceControladorRequisicao
+class RealizarLogin implements InterfaceControladorRequisicao
 {
+    use RenderizadorDeHtmlTrait, FlashMessageTrait;
+ 
     private $repositorioDeUsuarios;
 
     public function __construct()
@@ -20,8 +24,7 @@ class RealizarLogin extends ControllerComHtml implements InterfaceControladorReq
         $email = filter_input(INPUT_POST, 'email', FILTER_VALIDATE_EMAIL);
         
         if (is_null($email) || $email === false) {
-            $_SESSION['tipo_mensagem'] = 'danger';
-            $_SESSION['mensagem'] =  'E-mail inválido';
+            $this->defineMessagem('danger', 'E-mail inválido');
             header('Location: /login');
             return;
         }
@@ -29,8 +32,7 @@ class RealizarLogin extends ControllerComHtml implements InterfaceControladorReq
         $senha = filter_input(INPUT_POST, 'senha', FILTER_SANITIZE_STRING);
         $usuario = $this->repositorioDeUsuarios->findOneBy(['email' => $email]);
         if (is_null($usuario) || !$usuario->senhaEstaCorreta($senha)) {
-            $_SESSION['tipo_mensagem'] = 'danger';
-            $_SESSION['mensagem'] = 'E-mail/Senha inválidos';
+            $this->defineMessagem('danger', 'E-mail/Senha inválidos');
             header('Location: /login');
             return;
         }
